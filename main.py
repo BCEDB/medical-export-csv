@@ -1,7 +1,19 @@
 #
 # Import dependencies
 #
+
 from tkinter import *
+import ftplib
+
+#
+# Config
+#
+
+host = "127.0.0.1"
+port = 21
+username = "username"
+password = "password"
+download_path = ""
 
 #
 # User Interface (UI)
@@ -43,19 +55,30 @@ window.mainloop()
 
 # User Interface stores the user's option in a variable.
 
-# User's option is translated into the file's name.
+file_name = "MED_DATA_2022080315931"
 
 #
 # FTP
 #
 
 # Establish FTP connection
+ 
+ftp = ftplib.FTP( host )
+ftp.login( username, password )
 
 # Check file exists on the FTP Server.
-# File does not exist, error handling.
-# File does exist, proceed.
+try:
+    resp = ftp.sendcmd( ( "MLST " + file_name + ".csv" ) )
+except:
+    # File does not exist, error handling.
+    print("Error. The file specified does not exist on the server.")
 
-# Download the file.
+# File does exist, proceed.
+if 'type=file;' in resp:
+    with open( download_path + file_name + ".csv", 'wb') as f:
+        ftp.retrbinary('RETR ' + file_name + ".csv", f.write)
+ 
+ftp.quit()
 
 #
 # Data Validation
