@@ -3,91 +3,119 @@
 #
 
 import os
+
 from tkinter import *
+
+from tkinter import messagebox as mb
+
+from tkcalendar import Calendar
+
+from datetime import datetime
+
 import ftplib
+
 from classes.FTP import *
 
 #
 # Config
 #
 
-host = "127.0.0.1"
-username = "username"
-password = "password"
+class Medical_CSV_Export:
 
-#
-# User Interface (UI)
-# Requirements: The User Interface should ask the user to select a date in a 6-month range either side of the current date.
-# Additionally it should default to today's date.
+    host = "127.0.0.1"
+    username = "username"
+    password = "password"
 
-# window = Tk()
+    def action(self):
 
-# window.title("Date Selection")
+        # User Interface stores the user's option in a variable.
+        date = calendar.selection_get()
+        
+        # date.year = Year user selected.
+        # date.month = Month user selected.
+        # date.day = Day user selected.        
+        file_name = "MED_DATA_" + date.year + "0803153931"
 
-# window.geometry('1000x600')
-# window.configure(bg='aqua')
+        #
+        # FTP
+        #
+        # Establish an FTP connection
+        # host: The host of the server
+        # username: The username of the server
+        # password: the password to connect to the FTP server
+        ftp = FTP( host, username, password )
 
-# lbl = Label(window, text="Day")
-# lbl.grid(column=0, row=0)
-# lbl = Label(window, text="Hello", font=("Arial Bold", 50))
-# var =IntVar()
-# var.set(3)
-# spin = Spinbox(window, from_=1, to=31, width=5, textvariable=var)
-# spin.grid(column=10,row=0)
+        try:
+            # Download the file
+            destination_path = ftp.download( file_name, "C:/" )
+        except FileNotFoundError as error:
 
-# lbl = Label(window, text="Month")
-# lbl.grid(column=0, row=20)
-# lbl = Label(window, text="Hello", font=("Arial Bold", 50))
-# var =IntVar()
-# var.set(8)
-# spin = Spinbox(window, from_=1, to=12, width=5, textvariable=var)
-# spin.grid(column=10,row=20)
+            # File does not exist.
+            self.error( "A file does not exist for the date selected" )
+            
+            # Close the FTP connection.
+            ftp.close()
 
-# lbl = Label(window, text="Year")
-# lbl.grid(column=0, row=40)
-# lbl = Label(window, text="Hello", font=("Arial Bold", 50))
-# var =IntVar()
-# var.set(2022)
-# spin = Spinbox(window, from_=2020, to=2023, width=5, textvariable=var)
-# spin.grid(column=10,row=40)
+            # End the program's execution
+            exit()
 
-# window.mainloop()
+        # Close the FTP connection
+        ftp.close()
 
-# User Interface stores the user's option in a variable.
+        #
+        # Data Validation
+        #
 
-file_name = "MED_DATA_20220803153931"
+        # Validate the file.
+        # Name validation has already occured.
 
-#
-# FTP
-#
+        # Show a confirmation message        
+        self.confirmation( "File successfully downloaded")
 
-# Establish an FTP connection
-# host: The host of the server
-# username: The username of the server
-# password: the password to connect to the FTP server
-ftp = FTP( host, username, password )
+        # Lastly, open the file directory.
+        os.startfile( destination_path )
 
-try:
-    # Download the file
-    destination_path = ftp.download( file_name, "C:/" )
-except FileNotFoundError as error:
 
-    # File does not exist.
-    # Close the FTP connection.
-    ftp.close()
+    def main(self):
+        global calendar
+        
+        # Create the Window.
+        window = Tk()
 
-    # End the program's execution
-    exit()
+        # Set the title of the Window.
+        window.wm_title("CalendarDialog Demo")
 
-# Close the FTP connection
-ftp.close()
+        # Creates the Label
+        label = Label(text="Hello, Tkinter")
 
-#
-# Data Validation
-#
+        # Adds the Label to the Window
+        label.pack()
 
-# Validate the file.
-# Name validation has already occured.
+        # Create a Calendar, that the user can choose a date on.
+        # Defaults to the current day, month and year.        
+        calendar = Calendar(window, selectmode = 'day',
+                       year = datetime.now().year, month = datetime.now().month,
+                       day = datetime.now().day)
 
-# Lastly, open the file directory.
-os.startfile( destination_path )
+        # Adds the Calendar to the Window        
+        calendar.pack()
+            
+        # Define a button, on the Window, which when pressed calls the function action.
+        button = Button(window, text ="Import data", command = self.action )
+
+        # Adds the Button to the Window.
+        button.pack()
+
+        # Update the window with the elements        
+        window.update()
+
+        window.mainloop()
+
+    def confirmation( self, message ):
+         mb.showinfo( "Ok", message )
+
+    def error( self, message ):
+         mb.showerror( "Ok", message )
+
+Medical_CSV_Export = Medical_CSV_Export()
+Medical_CSV_Export.main()
