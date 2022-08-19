@@ -38,7 +38,8 @@ class Medical_CSV_Export:
         # date.year = Year user selected.
         # date.month = Month user selected.
         # date.day = Day user selected.
-        file_name = "MED_DATA_" + str(date.year) + "0803153931" + ".csv"
+        file_name = "MED_DATA_" + format(date.year, '02') + format(date.month, '02') + format(date.day, '02')
+        file_name = 'MED_DATA_20220803155901.csv'
 
         #
         # FTP
@@ -78,8 +79,9 @@ class Medical_CSV_Export:
         # Name validation has already occured.
 
         # Read contents of file
+        print("Validating file:", file_name)
+
         data = read_csv(path.join(destination_path, file_name))
-        print(file_name)
         header = data[0]
         batch_id = data[1][0]
 
@@ -89,40 +91,41 @@ class Medical_CSV_Export:
 
         if not valid_file:
             error = "Incorrect headers"
+        else:
 
-        # List all the downloaded files available
-        files = [f for f in os.listdir(destination_path) if os.path.isfile(os.path.join(destination_path, f))]
+            # List all the downloaded files available
+            files = [f for f in os.listdir(destination_path) if os.path.isfile(os.path.join(destination_path, f))]
 
-        # Define a dictionary to store all batch ids
-        batch_ids = {}
+            # Define a dictionary to store all batch ids
+            batch_ids = {}
 
-        # Iterate through available files to check for duplicate batch id
-        for file in files:
-            # Skip file if its the current one
-            if file == file_name:
-                continue
+            # Iterate through available files to check for duplicate batch id
+            for file in files:
+                # Skip file if its the current one
+                if file == file_name:
+                    continue
 
-            # Obtain batch id from the file
-            file_data = read_csv(path.join(destination_path, file))
-            bid = file_data[1][0]
+                # Obtain batch id from the file
+                file_data = read_csv(path.join(destination_path, file))
+                bid = file_data[1][0]
 
-            # Add batch id and filename to the dictionary
-            batch_ids[bid] = file
+                # Add batch id and filename to the dictionary
+                batch_ids[bid] = file
 
-        # Validate batch_id
-        if batch_id in batch_ids:
-            print(batch_id)
-            valid_file = False
+            # Validate batch_id
+            if batch_id in batch_ids:
+                print(batch_id)
+                valid_file = False
 
-            # Add the error message to the log
-            log_error(["ERROR", file, f"Invalid batch_id '{bid}'", f"Duplicate of {batch_ids[bid]}"])
-            error = "Duplicate batch ID"
+                # Add the error message to the log
+                log_error(["ERROR", file, f"Invalid batch_id '{bid}'", f"Duplicate of {batch_ids[bid]}"])
+                error = "Duplicate batch ID"
 
         # Inform user if the file is valid
         if valid_file:
             self.confirmation( "Validation successful" )
         else:
-            self.error("Invalid file:", error)
+            self.error(f"Invalid file: {error}")
 
 
 

@@ -30,11 +30,11 @@ def is_valid_header(file, header):
         if i == 1 and h != "timestamp":
             error += ["expecting: 'timestamp'"]
             log_error(error)
-        if i >= 2 and h != f"reading{i-1}":
-            error += [f"expecting: 'reading{i-1}'"]
+        if i >= 2 and h != f"reading{i+1}":
+            error += [f"expecting: 'reading{i+1}'"]
             log_error(error)
 
-    if len(error) >= 4:
+    if len(error) > 3:
         return False
     else:
         return True
